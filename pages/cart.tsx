@@ -1,6 +1,6 @@
 import React, { useState, ChangeEvent } from 'react';
 import Link from 'next/link';
-import TopBar from '@/pages/TopBar';
+import TopBar from "./TopBar";
 //import './Cart.css'; // optional: use .module.css if using CSS Modules
 
 // Type for a cart item
@@ -24,7 +24,11 @@ export default function Cart(props) {
   const total = Cart.cart.reduce((sum, item) => sum + item.price * item.qty, 0);
 
   if (Cart.cart.length === 0) {
-    return <p className="empty-message">Your cart is empty.</p>;
+    return (<>
+    <TopBar/>
+    <p className="empty-message">Your cart is empty.</p>
+    </>
+    );
   }
 
   return (

@@ -1,6 +1,6 @@
 import Head from "next/head";
 import Catalog from './catalog'; // relative import from pages/
-import TopBar from './topbar';
+import TopBar from "./TopBar";
 
 export default function Home() {
   return (

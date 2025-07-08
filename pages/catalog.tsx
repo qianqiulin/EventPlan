@@ -9,7 +9,7 @@ const Catalog: NextPage = () => {
   const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
-    fetch('/api/events') // Make sure you have this API route!
+    fetch('/api/events')
       .then((res) => {
         if (!res.ok) throw new Error('Failed to fetch');
         return res.json();
