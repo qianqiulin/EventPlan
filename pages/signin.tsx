@@ -26,7 +26,7 @@ function SignIn() {
           if (response.ok) {
              await checkAuthentication(); // Check authentication status after sign-in
             alert("Sign-in successful!");
-              router.push("/dashboard"); // Redirect to sign-in page after successful sign-up
+              router.push("/admin"); // Redirect to sign-in page after successful sign-up
   
           } else {
             alert("Error signing in");
