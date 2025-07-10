@@ -1,6 +1,6 @@
 import Head from "next/head";
 import Catalog from './catalog'; // relative import from pages/
-import TopBar from './topbar';
+
 
 export default function Home() {
   return (
@@ -12,7 +12,7 @@ export default function Home() {
         <link rel="icon" href="/favicon.ico" />
       </Head>
       <div id="content">
-        <TopBar/>
+     
         <Catalog/>
       </div>
     </>

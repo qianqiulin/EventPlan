@@ -31,14 +31,6 @@ export default function EventDetail(props) {
         }
       })
       .catch(err => console.error('Failed to fetch event:', err));
-
-      fetch('/api/me')
-      .then(res => {
-        if (!res.ok) throw new Error();
-        return res.json();
-      })
-      .then(setUser)
-      .catch(() => setUser(null));
   }, [id]);
 
   const handleAdd = () => {
@@ -132,31 +124,6 @@ export default function EventDetail(props) {
           Add {(parseInt(qty, 10) || 1)} to Cart
         </button>
       </div>
-      {user?.is_staff === 1 && event && (
-        <div style={{ marginTop: '1rem' }}>
-        <Link href={`/update-event/${event.uuid}`}>
-        <button className="update-button">Update Event</button>
-        </Link>
-        <button
-        className="delete-button"
-        onClick={async () => {
-            if (confirm('Are you sure you want to delete this event?')) {
-            const res = await fetch(`/api/events/${event.uuid}`, {
-                method: 'DELETE',
-            });
-            if (res.ok) {
-                setAlert({ severity: 'success', message: '🗑️ Event deleted' });
-                setTimeout(() => router.push('/'), 1000);
-            } else {
-                setAlert({ severity: 'error', message: '❌ Failed to delete event' });
-            }
-            }
-        }}
-        >
-        Delete Event
-        </button>
-        </div>
-        )}
     </div>
     </>
   );
