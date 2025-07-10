@@ -11,7 +11,7 @@ function mapDbRowToEvent(row: any): EventData {
     const endTime = String(end.hour() + end.minute() / 60);
   
     return new CustomEvent({
-        uuid:row.event_id,
+        event_id: row.event_id,
         name: row.name,
         date:row.event_date,
         start_time: row.start_time,
@@ -25,11 +25,11 @@ function mapDbRowToEvent(row: any): EventData {
   }
 
 export default async function handler(req: NextApiRequest, res: NextApiResponse) {
-  if (req.method === 'POST') {
-    /* need POST method*/
-  } 
+  // if (req.method === 'POST') {
+  //   /* need POST method*/
+  // } 
   
-  else if (req.method === 'GET'){
+  if (req.method === 'GET'){
     const { data, error } = await supabase.from('events').select('*');
 
     if (error) {
@@ -41,7 +41,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
     return res.status(200).json(events);
   }
   else {
-    res.setHeader('Allow', 'GET,POST');
+    res.setHeader('Allow', 'GET');
     res.status(405).end('Method Not Allowed');
   }
 }
