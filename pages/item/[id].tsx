@@ -12,8 +12,12 @@ export default function EventDetail(props) {
   const [event, setEvent] = useState<EventData | null>(null);
   const [qty, setQty] = useState<string>('1');
   const Cart=props.Cart
-  const [user, setUser] = useState<any>(null);
-  const [alert, setAlert] = useState<{ severity: 'success' | 'error'; message: string } | null>(null);
+  //const [user, setUser] = useState<any>(null);
+  const [alert, setAlert] = useState<{
+    severity: 'success' | 'error' | 'warning' | 'info';
+    message: string;
+  } | null>(null);
+  
 
   useEffect(() => {
     if (!id) return;
@@ -40,7 +44,7 @@ export default function EventDetail(props) {
   const handleAdd = () => {
     const quantity = parseInt(qty, 10);
     if (isNaN(quantity) || quantity < 1) {
-      alert("⚠️ Please enter a quantity of at least 1.");
+      setAlert({ severity: 'warning', message: '⚠️ Please enter a quantity of at least 1.' });
       return;
     }
 
@@ -50,14 +54,15 @@ export default function EventDetail(props) {
         quantity
       );
       setQty('1');
-      alert(`✅ Added ${quantity} × "${event.name}" to your cart!`);
+      setAlert({ severity: 'success', message: `✅ Added ${quantity} × "${event.name}" to your cart!` });
+      
+      setTimeout(() => setAlert(null), 3000);
     }
   };
 
   if (!event) return <p>Loading…</p>;
   return (
     <>
-    <TopBar/>
 
     {alert && (
       <Slide direction="left" in={true} mountOnEnter unmountOnExit>
