@@ -3,7 +3,7 @@ import React, { useEffect, useState } from 'react';
 import { useRouter } from 'next/router';
 import {dayjs, EventData} from '@jstiava/chronos'
 import Link from "next/link";
-import TopBar from '@/pages/TopBar';
+import TopBar from '@/pages/topbar';
 import { Alert, Slide } from '@mui/material';
 
 export default function EventDetail(props) {
