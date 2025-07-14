@@ -11,7 +11,7 @@ function mapDbRowToEvent(row: any): EventData {
     const endTime = String(end.hour() + end.minute() / 60);
   
     return new CustomEvent({
-        event_id: row.event_id,
+        uuid: row.event_id,
         name: row.name,
         date:row.event_date,
         start_time: row.start_time,

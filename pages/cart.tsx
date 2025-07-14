@@ -59,7 +59,7 @@ export default function Cart(props) {
       <ul className="cart-list">
         {Cart.cart.map((item) => (
           <CartItem
-            key={item.id}
+            key={item.event_id}
             item={item}
             onRemove={(qty) => Cart.remove(item.id, qty)}
             onDelete={() => Cart.remove(item.id, item.qty)}
