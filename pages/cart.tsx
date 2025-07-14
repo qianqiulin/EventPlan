@@ -1,7 +1,7 @@
 import React, { useState, ChangeEvent } from 'react';
 import Link from 'next/link';
 import TopBar from "./topbar";
-//import './Cart.css'; // optional: use .module.css if using CSS Modules
+//import './Cart.css'; // optional: use .module.css if using CSS Modules test
 
 // Type for a cart item
 interface CartItemType {
