@@ -30,7 +30,8 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
   // } 
   
   if (req.method === 'GET'){
-    const { data, error } = await supabase.from('events').select('*');
+    const table = req.query.table as string || 'events_peter_qian';
+    const { data, error } = await supabase.from(table).select('*');
 
     if (error) {
       console.error('❌ Supabase fetch error:', error);
