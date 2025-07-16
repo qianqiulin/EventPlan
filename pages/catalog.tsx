@@ -4,7 +4,7 @@ import type { NextPage } from 'next';
 import { dayjs, EventData } from "@jstiava/chronos";
 
 const Catalog: NextPage = () => {
-  const [tableName, setTableName] = useState('events_peter_qian');
+  const [tableName, setTableName] = useState('events');
   const [events, setEvents] = useState<EventData[] | null>(null);
   const [error, setError] = useState<string | null>(null);
 

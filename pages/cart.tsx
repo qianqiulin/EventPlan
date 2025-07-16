@@ -1,7 +1,7 @@
 import React, { useState, ChangeEvent } from 'react';
 import Link from 'next/link';
 
-import TopBar from "./TopBar";
+import TopBar from "../components/TopBar";
 import { Alert, Slide } from '@mui/material';
 
 //import './Cart.css'; // optional: use .module.css if using CSS Modules
@@ -22,10 +22,10 @@ interface CartItemProps {
   setAlert: React.Dispatch<React.SetStateAction<{ severity: 'success' | 'error' | 'warning'; message: string } | null>>;
 }
 
-export default function Cart(props) {
+export default function Cart(props: any) {
   const Cart=props.Cart
   const [alert, setAlert] = useState<{ severity: 'success' | 'error' | 'warning'; message: string } | null>(null);
-  const total = Cart.cart.reduce((sum, item) => sum + item.price * item.qty, 0);
+  const total = Cart.cart.reduce((sum: any, item: any) => sum + item.price * item.qty, 0);
 
   if (Cart.cart.length === 0) {
 
@@ -57,7 +57,7 @@ export default function Cart(props) {
       <h1 className="cart-header">Your Cart</h1>
 
       <ul className="cart-list">
-        {Cart.cart.map((item) => (
+        {Cart.cart.map((item: any) => (
           <CartItem
             key={item.event_id}
             item={item}
