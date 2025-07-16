@@ -3,16 +3,30 @@
 
 import React, { useEffect, useState } from 'react';
 import { useRouter } from 'next/router';
-          
 import { Alert, Slide } from '@mui/material';
 import { EventData } from '@jstiava/chronos';
+
+/* ------------------------------------------------------------------ */
+/* Types                                                              */
+/* ------------------------------------------------------------------ */
 
 type AlertState =
   | { severity: 'success' | 'error' | 'warning' | 'info'; message: string }
   | null;
 
-export default function EventDetail(props: any) {
-  const Cart = props.cart;
+// Very light Cart‑store shape; tweak to match your hook
+interface CartStore {
+  cart: { id: string | number; price: number; qty: number }[];
+  add: (item: { id: string | number; title: string; price: number }, qty: number) => void;
+  remove: (id: string | number, qty?: number) => void;
+  clear: () => void;
+}
+
+/* ------------------------------------------------------------------ */
+/* Component                                                          */
+/* ------------------------------------------------------------------ */
+
+export default function EventDetail({ Cart }: { Cart: CartStore }) {
   const router = useRouter();
   const { id } = router.query;
 
@@ -21,24 +35,38 @@ export default function EventDetail(props: any) {
   const [alert, setAlert] = useState<AlertState>(null);
 
   /* ------------------------------------------------------------------ */
-  /* Fetch event once the dynamic route param is ready                   */
+  /* Sanity check — helps catch prop‑name typos early                   */
   /* ------------------------------------------------------------------ */
+  if (process.env.NODE_ENV !== 'production') {
+    if (!Cart || typeof Cart.add !== 'function') {
+      // eslint‑disable‑next‑line no-console
+      console.error(
+        '❌ <EventDetail> received an invalid Cart prop. ' +
+          'Make sure the parent passes `Cart={cartStore}` with a capital C.'
+      );
+    }
+  }
+
+  /* ------------------------------------------------------------------ */
+  /* Fetch event once the dynamic route param is ready                  */
+  /* ------------------------------------------------------------------ */
+
   useEffect(() => {
     if (!id) return;
+
     fetch(`/api/events/${id}`)
-      .then(res => res.json())
-      .then(data => {
-        try {
-            setEvent(data as EventData)
-        } catch (err) {
-          console.error('Failed to instantiate Event:', err);
-        }
-      })
-      .catch(err => console.error('Failed to fetch event:', err));
+      .then((res) => res.json())
+      .then((data) => setEvent(data as EventData))
+      .catch((err) => console.error('Failed to fetch event:', err));
   }, [id]);
+
+  /* ------------------------------------------------------------------ */
+  /* Handlers                                                           */
+  /* ------------------------------------------------------------------ */
 
   const handleAdd = () => {
     const quantity = parseInt(qty, 10);
+
     if (isNaN(quantity) || quantity < 1) {
       setAlert({ severity: 'warning', message: '⚠️ Please enter a quantity of at least 1.' });
       return;
@@ -46,18 +74,29 @@ export default function EventDetail(props: any) {
 
     if (event) {
       Cart.add(
-        { id: event.uuid||event.name, title: event.name, price: event.price ?? 0 },
+        { id: event.uuid || event.name, title: event.name, price: event.price ?? 0 },
         quantity
       );
+
       setQty('1');
-      setAlert({ severity: 'success', message: '✅ Added ${quantity} × "${event.name}" to your cart!' });
-      
+      setAlert({
+        severity: 'success',
+        message: `✅ Added ${quantity} × "${event.name}" to your cart!`,
+      });
+
       setTimeout(() => setAlert(null), 3000);
     }
   };
+
+  /* ------------------------------------------------------------------ */
+  /* Render                                                             */
+  /* ------------------------------------------------------------------ */
+
   if (!event) return <p>Loading…</p>;
+
   return (
     <>
+      {/* Toast / Snackbar */}
       {alert && (
         <Slide direction="left" in mountOnEnter unmountOnExit>
           <div style={{ position: 'fixed', top: 20, right: 20, zIndex: 9999, minWidth: 300 }}>
@@ -68,6 +107,7 @@ export default function EventDetail(props: any) {
         </Slide>
       )}
 
+      {/* Event content */}
       <div
         style={{
           padding: '2rem',
@@ -79,7 +119,6 @@ export default function EventDetail(props: any) {
           margin: '0 auto',
         }}
       >
-        {/* Image — uses Ticketmaster icon or fallback */}
         {event.icon_img?.path && (
           <img
             src={event.icon_img.path}
@@ -128,6 +167,7 @@ export default function EventDetail(props: any) {
               }}
             />
           </label>
+
           <button onClick={handleAdd} style={{ padding: '0.5rem 1rem', borderRadius: 4 }}>
             Add {(parseInt(qty, 10) || 1)} to Cart
           </button>
