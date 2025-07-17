@@ -3,37 +3,32 @@ import { useEffect, useState } from 'react';
 import { enqueueSnackbar } from 'notistack';
 import EventForm from '@/components/eventForm';    // adjust the path if needed
 
-/* ─────────────── data shape coming from the API ─────────────── */
 type Event = {
-  event_id  : string;
-  name      : string;
+  event_id: string;
+  name: string;
   event_date: string;
   start_time: string;
-  end_time  : string;
-  location  : string;
-  info      : string;
-  image_url : string;
+  end_time: string;
+  location: string;
+  info: string;
+  image_url: string;
 };
 
 export default function AdminPage() {
-  /* ───── component state ───── */
   const [ready, setReady]       = useState(false);
   const [events, setEvents]     = useState<Event[]>([]);
   const [selected, setSelected] = useState<Event | null>(null); // null → create
   const isEditing               = Boolean(selected);
 
-  /* ───── fetch helper ───── */
   const refresh = () =>
     fetch('/api/events', { cache: 'no-store' })
       .then(r => r.json())
       .then(setEvents);
 
-  /* load once on mount */
   useEffect(() => {
     refresh().finally(() => setReady(true));
   }, []);
 
-  /* ───── CRUD helpers ───── */
   const handleCreate = async (data: Partial<Event>) => {
     const ok = await fetch('/api/events/create', {
       method : 'POST',
@@ -72,15 +67,12 @@ export default function AdminPage() {
       :  enqueueSnackbar('Something went wrong.', { variant: 'error' });
   };
 
-  /* ───── render gate ───── */
   if (!ready) return null;
 
-  /* ───── view ───── */
   return (
     <div style={{ padding: '2rem', maxWidth: 900, margin: '0 auto' }}>
       <h1>Admin Dashboard</h1>
 
-      {/* ───── list ───── */}
       <h2>Existing Events</h2>
       {events.length === 0 && <p>No events yet.</p>}
 
@@ -116,7 +108,6 @@ export default function AdminPage() {
         ))}
       </div>
 
-      {/* ───── form ───── */}
       <h2>{isEditing ? 'Edit Event' : 'Create New Event'}</h2>
       <EventForm
         initialData={selected}

@@ -2,6 +2,8 @@ import React, { useEffect, useState } from 'react';
 import Link from 'next/link';
 import type { NextPage } from 'next';
 import { dayjs, EventData } from "@jstiava/chronos";
+import advancedFormat from 'dayjs/plugin/advancedFormat';   // “Do” ⇒ 17th, 1st …
+dayjs.extend(advancedFormat);
 
 const Catalog: NextPage = () => {
   const [tableName, setTableName] = useState('events');
@@ -9,38 +11,30 @@ const Catalog: NextPage = () => {
   const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
-    setEvents(null); // show loading state on table change
+    setEvents(null);
+
     fetch(`/api/events?table=${tableName}`)
-      .then((res) => {
+      .then(res => {
         if (!res.ok) throw new Error('Failed to fetch');
         return res.json();
       })
-
-
       .then(data => {
+        const parsed: UIEvent[] = data.map((e: EventData) => {
+          const fullDate = dayjs(
+            `${e.date} ${e.start_time ?? '00:00:00'}`,
+            'YYYYMMDD HH:mm:ss'
+          );
 
-        const changedData = data.map(x => {
-        const dateStr = String(x.event_date)
-        const year = Number(dateStr.slice(0, 4))
-        const month = Number(dateStr.slice(4, 6)) - 1 // Month is 0-indexed in dayjs constructor
-        const day = Number(dateStr.slice(6, 8))
+          return {
+            ...e,
+            startDT: fullDate,                                
+            displayStart: fullDate.format('MMMM Do, YYYY [at] h:mma'), 
+          };
+        });
 
-        // Parse time
-        const [hours, minutes, seconds] = x.start_time.split(':').map(Number)
-
-        // Construct the full datetime
-        const dateTime = dayjs(new Date(year, month, day, hours, minutes, seconds))
-
-        return {
-          ...x,
-          startDateTime: dateTime
-          //startEndTime: dayjs(`${x.event_date} ${x.end_time}`, 'YYYYMMDD HH:mm:ss')
-        }
-      });
-      console.log(changedData)
-      setEvents(changedData)
+        setEvents(parsed);
       })
-      .catch((err) => {
+      .catch(err => {
         console.error(err);
         setError('Failed to load events');
       });
@@ -69,7 +63,7 @@ const Catalog: NextPage = () => {
         <p>No events found.</p>
       ) : (
         <div className="catalog-grid">
-          {events.map((e) => (
+          {events.map(e => (
             <article key={e.uuid} className="event-card">
               <Link href={`/item/${e.uuid}`} className="event-link">
                 {e.icon_img?.path && (
@@ -80,14 +74,14 @@ const Catalog: NextPage = () => {
                     style={{ maxWidth: '100%', borderRadius: '0.5rem', marginBottom: '1rem' }}
                   />
                 )}
+
                 <div className="event-info">
                   <h2 className="event-title">{e.name}</h2>
-                  <p className="event-detail">
-                    {e.start_time} – {e.end_time}
-                  </p>
-                  <p className="event-detail" style={{ fontWeight: 'bold' }}>
-                    ${0}
-                  </p>
+
+                  {/* Already formatted ↓ */}
+                  <p className="event-detail">{e.displayStart}</p>
+
+                  <p className="event-detail" style={{ fontWeight: 'bold' }}>${0}</p>
                   <p className="event-detail">{e.location}</p>
                 </div>
               </Link>
