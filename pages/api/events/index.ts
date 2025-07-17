@@ -10,7 +10,7 @@ function mapDbRowToEvent(row: any): EventData {
     const startTime = String(start.hour() + start.minute() / 60);
     const endTime = String(end.hour() + end.minute() / 60);
   
-    return new CustomEvent({
+    return {
         uuid: row.event_id,
         name: row.name,
         date:row.event_date,
@@ -21,7 +21,7 @@ function mapDbRowToEvent(row: any): EventData {
         metadata: {
           description: row.description
         }
-    }).eject();
+    };
   }
 
 export default async function handler(req: NextApiRequest, res: NextApiResponse) {

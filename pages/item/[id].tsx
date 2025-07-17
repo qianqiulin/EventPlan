@@ -1,30 +1,19 @@
-// pages/item/[id].tsx
 'use client';
-
 import React, { useEffect, useState } from 'react';
 import { useRouter } from 'next/router';
 import { Alert, Slide } from '@mui/material';
 import { EventData } from '@jstiava/chronos';
 
-/* ------------------------------------------------------------------ */
-/* Types                                                              */
-/* ------------------------------------------------------------------ */
-
 type AlertState =
   | { severity: 'success' | 'error' | 'warning' | 'info'; message: string }
   | null;
 
-// Very light Cart‑store shape; tweak to match your hook
 interface CartStore {
   cart: { id: string | number; price: number; qty: number }[];
   add: (item: { id: string | number; title: string; price: number }, qty: number) => void;
   remove: (id: string | number, qty?: number) => void;
   clear: () => void;
 }
-
-/* ------------------------------------------------------------------ */
-/* Component                                                          */
-/* ------------------------------------------------------------------ */
 
 export default function EventDetail({ Cart }: { Cart: CartStore }) {
   const router = useRouter();
@@ -34,9 +23,7 @@ export default function EventDetail({ Cart }: { Cart: CartStore }) {
   const [qty, setQty] = useState('1');
   const [alert, setAlert] = useState<AlertState>(null);
 
-  /* ------------------------------------------------------------------ */
-  /* Sanity check — helps catch prop‑name typos early                   */
-  /* ------------------------------------------------------------------ */
+  
   if (process.env.NODE_ENV !== 'production') {
     if (!Cart || typeof Cart.add !== 'function') {
       // eslint‑disable‑next‑line no-console
@@ -47,10 +34,6 @@ export default function EventDetail({ Cart }: { Cart: CartStore }) {
     }
   }
 
-  /* ------------------------------------------------------------------ */
-  /* Fetch event once the dynamic route param is ready                  */
-  /* ------------------------------------------------------------------ */
-
   useEffect(() => {
     if (!id) return;
 
@@ -59,10 +42,6 @@ export default function EventDetail({ Cart }: { Cart: CartStore }) {
       .then((data) => setEvent(data as EventData))
       .catch((err) => console.error('Failed to fetch event:', err));
   }, [id]);
-
-  /* ------------------------------------------------------------------ */
-  /* Handlers                                                           */
-  /* ------------------------------------------------------------------ */
 
   const handleAdd = () => {
     const quantity = parseInt(qty, 10);
@@ -87,10 +66,6 @@ export default function EventDetail({ Cart }: { Cart: CartStore }) {
       setTimeout(() => setAlert(null), 3000);
     }
   };
-
-  /* ------------------------------------------------------------------ */
-  /* Render                                                             */
-  /* ------------------------------------------------------------------ */
 
   if (!event) return <p>Loading…</p>;
 

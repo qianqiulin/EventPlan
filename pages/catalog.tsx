@@ -15,7 +15,31 @@ const Catalog: NextPage = () => {
         if (!res.ok) throw new Error('Failed to fetch');
         return res.json();
       })
-      .then((data) => setEvents(data))
+
+
+      .then(data => {
+
+        const changedData = data.map(x => {
+        const dateStr = String(x.event_date)
+        const year = Number(dateStr.slice(0, 4))
+        const month = Number(dateStr.slice(4, 6)) - 1 // Month is 0-indexed in dayjs constructor
+        const day = Number(dateStr.slice(6, 8))
+
+        // Parse time
+        const [hours, minutes, seconds] = x.start_time.split(':').map(Number)
+
+        // Construct the full datetime
+        const dateTime = dayjs(new Date(year, month, day, hours, minutes, seconds))
+
+        return {
+          ...x,
+          startDateTime: dateTime
+          //startEndTime: dayjs(`${x.event_date} ${x.end_time}`, 'YYYYMMDD HH:mm:ss')
+        }
+      });
+      console.log(changedData)
+      setEvents(changedData)
+      })
       .catch((err) => {
         console.error(err);
         setError('Failed to load events');
