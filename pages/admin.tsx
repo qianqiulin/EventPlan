@@ -15,10 +15,10 @@ type Event = {
 };
 
 export default function AdminPage() {
-  const [ready, setReady]       = useState(false);
-  const [events, setEvents]     = useState<Event[]>([]);
+  const [ready, setReady] = useState(false);
+  const [events, setEvents] = useState<Event[]>([]);
   const [selected, setSelected] = useState<Event | null>(null); // null → create
-  const isEditing               = Boolean(selected);
+  const isEditing = Boolean(selected);
 
   const refresh = () =>
     fetch('/api/events', { cache: 'no-store' })
