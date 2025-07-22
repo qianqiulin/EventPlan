@@ -6,16 +6,18 @@ function mapDbRowToEvent(row: any): EventData {
   const start = dayjs(row.start_time);
   const end   = dayjs(row.end_time);
 
-  return new CustomEvent({
-    event_id  : row.event_id,
+  return {
+    uuid: row.event_id,
     name: row.name,
-    date: row.event_date,
+    date:row.event_date,
     start_time: row.start_time,
     end_time: row.end_time,
     location: row.location,
-    icon_img: row.image_url ? { path: row.image_url, alt: row.name } : null,
-    metadata: { description: row.description ?? undefined },
-  }).eject();
+    icon_img:row.image_url ? { path: row.image_url, alt: row.title } : null,
+    metadata: {
+      description: row.description
+    }
+};
 }
 
 export default async function handler(req: NextApiRequest, res: NextApiResponse) {
