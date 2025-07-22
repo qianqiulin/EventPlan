@@ -16,7 +16,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
     try {
       // Retrieve user data from the database using Supabase
       const { data: user, error } = await supabase
-        .from("users(Vignesh)") 
+        .from("usersVig") 
         .select("id, email, password, role")
         .eq("email", email)
         .limit(1)

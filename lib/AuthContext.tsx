@@ -8,6 +8,7 @@ type AuthContextType = {
   checkAuthentication: () => Promise<void>;
   setIsAuthenticated: React.Dispatch<React.SetStateAction<boolean>>;
   setAdmin: React.Dispatch<React.SetStateAction<boolean>>;
+  loading: boolean; 
   admin: boolean; 
 
 };
@@ -17,13 +18,10 @@ const AuthContext = createContext<AuthContextType | undefined>(undefined);
 export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
   const [isAuthenticated, setIsAuthenticated] = useState(false);
   const [user, setUser] = useState<any | null>(null);
-  const [admin, setAdmin] = useState(false); // State to track if the user is an admin
+  const [admin, setAdmin] = useState(false);
+  const [loading, setLoading] = useState(true) // State to track if the user is an admin
 
-  useEffect(() => {
-    // Check authentication status when the component mounts
-    checkAuthentication();
-  }, []); // Empty dependency array ensures this runs only once when the component mounts
-
+ 
   // Function to check authentication status that can be used globally. 
   const checkAuthentication = async () => {
     try {
@@ -33,6 +31,7 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
       });
 
       if (response.ok) {
+        console.log(response)
         const data = await response.json();
         setIsAuthenticated(true);
         setUser(data.user); // Set user information globally
@@ -51,16 +50,24 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
       console.error("Error checking authentication:", error);
       setIsAuthenticated(false);
       setUser(null);
+    } finally {
+      setLoading(false)
     }
 
 
   };
 
+  useEffect(() => {
+    // Check authentication status when the component mounts
+    checkAuthentication();
+  }, []); // Empty dependency array ensures this runs only once when the component mounts
+
+
   // Automatically check authentication when the app loads
   
 
   return (
-    <AuthContext.Provider value={{ isAuthenticated, user, admin, checkAuthentication, setIsAuthenticated, setAdmin}}>
+    <AuthContext.Provider value={{ isAuthenticated, user, admin, checkAuthentication, setIsAuthenticated, setAdmin, loading}}>
       {children}
     </AuthContext.Provider>
   );

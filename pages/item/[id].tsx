@@ -15,6 +15,15 @@ interface CartStore {
   clear: () => void;
 }
 
+export interface Ticket {
+  category_id: number;
+  event_id: number; 
+  price: number;
+  total_quantity: number;
+  available_quantity: number;
+  ticket_types: any; // Assuming ticket types are stored as a string
+}
+
 export default function EventDetail({ Cart }: { Cart: CartStore }) {
   const router = useRouter();
   const { id } = router.query;
@@ -22,6 +31,7 @@ export default function EventDetail({ Cart }: { Cart: CartStore }) {
   const [event, setEvent] = useState<UIEvent | null>(null);
   const [qty, setQty] = useState('1');
   const [alert, setAlert] = useState<AlertState>(null);
+  const [tickets, setTickets] = useState<Ticket[]>([]);
 
   useEffect(() => {
     if (!router.isReady || !id) return;

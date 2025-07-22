@@ -75,6 +75,16 @@ export default function TopBar() {
 >
   Sign Out
 </Button>
+  {isAuthenticated && ( // Check if the user is authenticated
+                <>
+                  <Button color="inherit" onClick={() => router.push('/request')}>
+                    Send Request
+                  </Button>
+                  <Button color="inherit" onClick={() => router.push('/requested')}>
+                    My Requests
+                  </Button>
+                </>
+              )}
             </>
           )}
         </Box>
