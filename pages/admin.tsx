@@ -1,10 +1,10 @@
 'use client';
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useCallback } from 'react';
 import { enqueueSnackbar } from 'notistack';
-import EventForm from '@/components/eventForm';    // adjust the path if needed
+import EventForm from '@/components/eventForm';
 
 type Event = {
-  event_id: string;
+  id: string;
   name: string;
   event_date: string;
   start_time: string;
@@ -14,20 +14,35 @@ type Event = {
   image_url: string;
 };
 
+// Normalize whatever the API gives back into our Event shape
+const normalize = (e: any): Event => ({
+  id: e.id ?? e.event_id ?? e.uuid, //talk to jeremy about this
+  name: e.name,
+  event_date: e.event_date ?? e.date,
+  start_time: e.start_time ?? '',
+  end_time: e.end_time ?? '',
+  location: e.location ?? '',
+  info: e.metadata?.description ?? e.info ?? '',
+  image_url: e.icon_img?.path ?? e.image_url ?? '',
+});
+
 export default function AdminPage() {
   const [ready, setReady] = useState(false);
   const [events, setEvents] = useState<Event[]>([]);
-  const [selected, setSelected] = useState<Event | null>(null); // null → create
+  const [selected, setSelected] = useState<Event | null>(null);
   const isEditing = Boolean(selected);
 
-  const refresh = () =>
-    fetch('/api/events', { cache: 'no-store' })
-      .then(r => r.json())
-      .then(setEvents);
+  const refresh = useCallback(
+    () =>
+      fetch('/api/events', { cache: 'no-store' })
+        .then(r => r.json())
+        .then((data) => setEvents(data.map(normalize))),
+    []
+  );
 
   useEffect(() => {
     refresh().finally(() => setReady(true));
-  }, []);
+  }, [refresh]);
 
   const handleCreate = async (data: Partial<Event>) => {
     const ok = await fetch('/api/events/create', {
@@ -43,8 +58,7 @@ export default function AdminPage() {
 
   const handleUpdate = async (data: Partial<Event>) => {
     if (!selected) return;
-
-    const ok = await fetch(`/api/events/${selected.event_id}`, {
+    const ok = await fetch(`/api/events/${selected.id}`, {
       method : 'PUT',
       headers: { 'Content-Type': 'application/json' },
       body   : JSON.stringify(data),
@@ -58,9 +72,7 @@ export default function AdminPage() {
 
   const handleDelete = async (ev: Event) => {
     if (!confirm(`Delete "${ev.name}"?`)) return;
-
-    const ok = await fetch(`/api/events/${ev.event_id}`, { method: 'DELETE' })
-      .then(r => r.ok);
+    const ok = await fetch(`/api/events/${ev.id}`, { method: 'DELETE' }).then(r => r.ok);
 
     ok
       ? (enqueueSnackbar('Event deleted!', { variant: 'success' }), refresh())
@@ -86,7 +98,7 @@ export default function AdminPage() {
       >
         {events.map(ev => (
           <div
-            key={ev.event_id}
+            key={ev.id}
             style={{
               border: '1px solid #ddd',
               borderRadius: 8,

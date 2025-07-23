@@ -21,8 +21,8 @@ function mapDbRowToEvent(row: any): EventData {
 }
 
 export default async function handler(req: NextApiRequest, res: NextApiResponse) {
-  const { event_id } = req.query;
-  const id = Array.isArray(event_id) ? event_id[0] : event_id;   // string | undefined
+  const { id } = req.query;
+  //const id = Array.isArray(event_id) ? event_id[0] : event_id;   // string | undefined
 
   try {
     if (req.method === 'GET') {

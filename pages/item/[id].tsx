@@ -9,7 +9,7 @@ type AlertState =
   | null;
 
 interface CartStore {
-  cart: { id: string | number; price: number; qty: number }[];
+  cart:{ id: string | number; price: number; qty: number }[];
   add: (item: { id: string | number; title: string; price: number }, qty: number) => void;
   remove: (id: string | number, qty?: number) => void;
   clear: () => void;
@@ -17,7 +17,7 @@ interface CartStore {
 
 export interface Ticket {
   category_id: number;
-  event_id: number; 
+  id: number; 
   price: number;
   total_quantity: number;
   available_quantity: number;
