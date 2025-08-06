@@ -1,63 +1,82 @@
-import { NextApiRequest, NextApiResponse } from "next";
+import type { NextApiRequest, NextApiResponse } from "next";
 import bcrypt from "bcrypt";
-import { supabase } from "../../lib/supabase"; // Import Supabase client
- // Load environment variables from .env file
-import jwt from "jsonwebtoken"; // Import JSON Web Token library
+import jwt, { Secret } from "jsonwebtoken";
+import { createHash } from "crypto";
+import { supabase } from "@/lib/supabase";
+import { sendLoginCode } from "@/lib/mailer";
+import { serialize } from "cookie";
+
+function sha256(input: string) {
+  return createHash("sha256").update(input).digest("hex");
+}
+
+function generateCode() {
+  return String(Math.floor(100000 + Math.random() * 900000)); // 6 digits
+}
 
 export default async function handler(req: NextApiRequest, res: NextApiResponse) {
-  if (req.method === "POST") {
-    const { password, email } = req.body; // Extract email and password from request body
+  if (req.method !== "POST") return res.status(405).json({ message: "Method not allowed" });
 
-    // Validate request body
-    if (!email || !password) {
-      return res.status(400).json({ message: "Missing email or password" });
-    }
+  try {
+    const { password, email } = req.body as { email?: string; password?: string };
+    if (!email || !password) return res.status(400).json({ message: "Missing email or password" });
 
+    const emailNorm = email.trim().toLowerCase();
+
+    // Fetch user (ensure your server-side Supabase client has service role key if RLS blocks this)
+    const { data: user, error } = await supabase
+      .from("usersVig")
+      .select("id, email, password, role")
+      .eq("email", emailNorm)
+      .limit(1)
+      .single();
+
+    if (error || !user) return res.status(404).json({ message: "User not found" });
+
+    const ok = await bcrypt.compare(password, user.password);
+    if (!ok) return res.status(401).json({ message: "Invalid password" });
+
+    // Generate and email OTP
+    const code = generateCode();
     try {
-      // Retrieve user data from the database using Supabase
-      const { data: user, error } = await supabase
-        .from("usersVig") 
-        .select("id, email, password, role")
-        .eq("email", email)
-        .limit(1)
-        .single();
-
-      // Handle errors or missing user
-      if (error || !user) {
-        return res.status(404).json({ message: "User not found" });
-      }
-
-      // Compare the provided password with the hashed password
-      const isPasswordValid = await bcrypt.compare(password as string, user.password);
-
-      if (!isPasswordValid) {
-        return res.status(401).json({ message: "Invalid password" });
-      }
-
-      // Generate a JWT token
-      const token = jwt.sign(
-        { id: user.id, email: user.email, role: user.role }, // Payload
-        process.env.JWT_SECRET!, // Secret key
-        { expiresIn: "1h" } // Token expiration
-      );
-
-      // Set the token in an HTTP-only cookie
-      res.setHeader(
-        "Set-Cookie",
-        `token=${token}; HttpOnly; Path=/; Max-Age=14400; SameSite=Strict`
-      );
-      console.log("Cookie set:", `token=${token}`); // Debugging: Log the cookie
-
-      // Respond with success message
-      return res.status(200).json({
-        message: "Sign-in successful",
-        token, // Optional: Include token in response for debugging purposes
-      });
-    } catch (error) {
-      console.error("Error during sign-in:", error);
-      return res.status(500).json({ message: "Internal server error" });
+      await sendLoginCode(user.email, code);
+    } catch (e) {
+      console.error("sendLoginCode failed:", e);
+      return res.status(500).json({ message: "Failed to send code. Try again later." });
     }
-  } else {
-    return res.status(405).json({ message: "Method not allowed" });
+
+    // Store only a hash of the OTP in the pending JWT
+    const pepper = process.env.OTP_PEPPER || "";
+    const otp_hash = sha256(code + pepper);
+
+    const pending = jwt.sign(
+      {
+        user_id: user.id,
+        username: user.email, // or a username column if you have it
+        email: user.email,
+        amr: ["pwd"],
+        otp_hash,
+        tries: 3,
+      },
+      process.env.JWT_SECRET as Secret,
+      { expiresIn: "10m" }
+    );
+
+    // Set short-lived pending cookie (10 minutes)
+    const cookie = serialize("pending_session", pending, {
+      httpOnly: true,
+      secure: process.env.NODE_ENV === "production",
+      sameSite: "lax",
+      maxAge: 60 * 10,
+      path: "/",
+    });
+
+    res.setHeader("Set-Cookie", cookie);
+
+    // Tell the client to show the OTP step
+    return res.status(200).json({ mfa_required: true, method: "email" });
+  } catch (err) {
+    console.error("signin error:", err);
+    return res.status(500).json({ message: "Internal server error" });
   }
 }
